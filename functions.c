@@ -1,10 +1,10 @@
 #include "defines.h"
-#include <stdio.h>
+
 
 // Enable GPIO clocks
 void setup_GPIO_clock(int port){
 	
-	SYSCTL_RCGCGPIO = 1 << port;
+	SYSCTL_RCGCGPIO |= (1 << port);
 	
 	while ((SYSCTL_PRGPIO & (1 << port)) != (1 << port)){
 		__asm{ NOP }
@@ -26,22 +26,22 @@ void setup_GPIO_PWM_B(int pin){
 }
 
 /// Setup GPIO pins on Port A for digital output
-void setup_GPIO_RGB_A(int pin){
+void setup_GPIO_RGB_A(unsigned long pin){
 	
 	GPIO_A_DIR |= (1 << pin);
 	
 	GPIO_A_AFSEL &= ~(1 << pin);
 	
-	GPIO_B_DEN |= (1 << pin);
+	GPIO_A_DEN |= (1 << pin);
 	
-	GPIO_B_PCTL &= ~(0xF << (pin*4));
+	GPIO_A_PCTL &= ~(0xF << (pin*4));
 	
 }
 // Setup the PLL for higher clock speed
 void setup_PLL(void){
 	
 	//Config for adavanced systems
-	SYSCTL_RCC2 |= (1 << 31);
+	SYSCTL_RCC2 |= 0x8000000;
 	
 	// Bypass PLL for init
 	SYSCTL_RCC2 |= (1 << 11);
@@ -85,6 +85,12 @@ void setup_PWM_Hsync(void){
 	//Enable clock for pwm
 	SYSCTL_RCGTIMER |= 0x1;
 	
+	//Wait for clock
+	__asm{ NOP }
+	__asm{ NOP }
+	__asm{ NOP }
+	
+	
 	// Disable timer A
 	TIMER0_CTL &= ~0x1;
 	
@@ -125,11 +131,7 @@ void setup_PWM_Vsync(void){
 	//Enable clock for pwm
 	SYSCTL_RCGTIMER |= 0x1;
 	
-	//Wait for clock
-	__asm{ NOP }
-	__asm{ NOP }
-	__asm{ NOP }
-	
+
 	// Disable timer A
 	TIMER2_CTL &= ~0x1;
 	

@@ -1,7 +1,8 @@
-#pragma src
+
 #include "defines.h"
-#include <stdio.h>
-#include "functions.c"
+#include "functions.h"
+
+
 
 /*   PORTS AND PINS  
 
@@ -22,9 +23,12 @@ PORT A PIN 7   DIGITAL OUT BLUE BIT 1
 
 
 /********************* MAIN ****************************/
+
+
+
 int main(void)
 {	
-	int i;
+	unsigned long i;
 	setup_GPIO_clock(A);
 	setup_GPIO_clock(B);
 	
@@ -44,6 +48,7 @@ int main(void)
 	// Enable syncs 
 	TIMER0_CTL &= ~0x1;
 	TIMER2_CTL &= ~0x1;
+	
 // spin 
 while(1) ;
 }

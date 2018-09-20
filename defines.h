@@ -34,8 +34,8 @@
 #define GPIO_A_BASE			(*((unsigned long *)0x40004000))
 #define GPIO_A_DIR			(*((unsigned long *)0x40004400))
 #define GPIO_A_AFSEL		(*((unsigned long *)0x40004420))
-#define GPIO_A_DEN			(*((unsigned long *)0x4000451c))
-#define GPIO_A_PCTL			(*((unsigned long *)0x4000452c))
+#define GPIO_A_DEN			(*((unsigned long *)0x4000451C))
+#define GPIO_A_PCTL			(*((unsigned long *)0x4000452C))
 #define GPIO_A_AMSEL		(*((unsigned long *)0x40004528))
 
 /* Defines for GPIO ports B */
@@ -43,8 +43,8 @@
 #define GPIO_B_BASE			(*((unsigned long *)0x40005000))
 #define GPIO_B_DIR			(*((unsigned long *)0x40005400))
 #define GPIO_B_AFSEL		(*((unsigned long *)0x40005420))
-#define GPIO_B_DEN			(*((unsigned long *)0x4000551c))
-#define GPIO_B_PCTL			(*((unsigned long *)0x4000552c))
+#define GPIO_B_DEN			(*((unsigned long *)0x4000551C))
+#define GPIO_B_PCTL			(*((unsigned long *)0x4000552C))
 #define GPIO_B_AMSEL		(*((unsigned long *)0x40005528))
 
 /* Define ports as numbers for ease of use*/
@@ -55,6 +55,7 @@
 #define E 4
 #define F 5
 
+;
 
 
 
