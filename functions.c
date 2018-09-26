@@ -40,23 +40,33 @@ void setup_GPIO_RGB_A(unsigned long pin){
 // Setup the PLL for higher clock speed
 void setup_PLL(void){
 	
+	// Set crystal value bits 10:6 for required clock speed 0x15 for max crystal of 16MHz
+	SYSCTL_RCC |= (0x15 << 6);
+	
+	//Set use sysdivbit
+	SYSCTL_RCC |= (1 << 22);
+	
+	
 	//Config for adavanced systems
-	SYSCTL_RCC2 |= 0x8000000;
+	SYSCTL_RCC2 |= 0x80000000;
 	
 	// Bypass PLL for init
 	SYSCTL_RCC2 |= (1 << 11);
 	
-	// Set crystal value bits 10:6 for required clock speed 0x15 for max crystal of 16MHz
-	SYSCTL_RCC |= (0x15 < 6);
-	
 	// Set oscillator source as main oscillator bits 6:4
-	SYSCTL_RCC2 &= ~(0x7 < 4);
+	SYSCTL_RCC2 &= ~(0x7 << 4);
 	
 	// Activate PLL and select 400MHz PLL
 	SYSCTL_RCC2 &= ~(1 << 13);
 	
-	//clear DIV400 no SYSDIV LSB
-	SYSCTL_RCC2 &= ~(1 << 30);
+	//clear DIV400
+	SYSCTL_RCC2 |= (1 << 30);
+	
+	///Clear sysdiv lsb
+	SYSCTL_RCC2 &= ~(1 << 22);
+	
+	// Set system divisor required speed FOR NOW IS 80MHz
+	SYSCTL_RCC2 &= ~(0x3F << 23);
 	
 	// Set system divisor required speed FOR NOW IS 80MHz
 	SYSCTL_RCC2 |= (0x2 << 23);
@@ -85,11 +95,10 @@ void setup_PWM_Hsync(void){
 	//Enable clock for pwm
 	SYSCTL_RCGTIMER |= 0x1;
 	
-	//Wait for clock
-	__asm{ NOP }
-	__asm{ NOP }
-	__asm{ NOP }
-	
+	//Wait for clock to stabalize
+	while ((SYSCTL_PRTIMER & (0x1)) != (0x1)){
+		__asm{ NOP }
+	}
 	
 	// Disable timer A
 	TIMER0_CTL &= ~0x1;
@@ -109,13 +118,15 @@ void setup_PWM_Hsync(void){
 	//No prescaler
 	
 	// Set Preload value for timer A h-sync
-	TIMER0_TAILR |= 2542;
+	TIMER0_TAILR |= 0;
+	TIMER0_TAILR |= 0x9EE;
 	
 	// Set match value
-	TIMER0_MATCH |= 2237;
+	TIMER0_MATCH |= 0;
+	TIMER0_MATCH |= 0x8BD;
 	
 	// Enable timer A DISABLED FOR TIMING
-	//TIMER0_CTL &= ~0x1;
+	//TIMER0_CTL |= 0x1;
 	
 }
 
@@ -129,9 +140,13 @@ MATCH VALUE 1,329,573 */
 
 void setup_PWM_Vsync(void){
 	//Enable clock for pwm
-	SYSCTL_RCGTIMER |= 0x1;
+	SYSCTL_RCGTIMER |= (1 << 2);
 	
-
+	//Wait for clock to stabalize
+	while ((SYSCTL_PRTIMER & (1 << 2)) != (1 << 2)){
+		__asm{ NOP }
+	}
+	
 	// Disable timer A
 	TIMER2_CTL &= ~0x1;
 	
@@ -159,4 +174,4 @@ void setup_PWM_Vsync(void){
 	//TIMER2_CTL &= ~0x1;
 	
 }
-
+//void pixel(

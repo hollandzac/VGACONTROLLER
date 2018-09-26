@@ -2,7 +2,10 @@
 #include "defines.h"
 #include "functions.h"
 
-
+/* 
+RESOLUTION 320 X 420
+PIXEL CLOCK 12.5MHz 80ns CLOCK
+*/
 
 /*   PORTS AND PINS  
 
@@ -25,10 +28,22 @@ PORT A PIN 7   DIGITAL OUT BLUE BIT 1
 /********************* MAIN ****************************/
 
 
+struct ball {
+	int xpos;
+	int ypos;
+};
+
+struct paddle {
+	int xpos;
+	int ypos;
+};
+
+
 
 int main(void)
 {	
 	unsigned long i;
+		
 	setup_GPIO_clock(A);
 	setup_GPIO_clock(B);
 	
@@ -46,8 +61,8 @@ int main(void)
 	setup_PWM_Vsync();
 	
 	// Enable syncs 
-	TIMER0_CTL &= ~0x1;
-	TIMER2_CTL &= ~0x1;
+	TIMER0_CTL |= 0x1;
+	TIMER2_CTL |= 0x1;
 	
 // spin 
 while(1) ;

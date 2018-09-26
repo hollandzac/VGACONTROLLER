@@ -6,6 +6,7 @@
 #define SYSCTL_RCC2 		(*((unsigned long *)0x400FE070))
 #define SYSCTL_RIS 			(*((unsigned long *)0x400FE050))
 #define SYSCTL_RCGTIMER (*((unsigned long *)0x400FE604))
+#define SYSCTL_PRTIMER	(*((unsigned long *)0x400FEA04))
 #define SYSCTL_RCGC0	  (*((unsigned long *)0x400FE100))
 	
 /* Defines for timer 0 */
