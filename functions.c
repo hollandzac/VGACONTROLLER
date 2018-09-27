@@ -118,11 +118,11 @@ void setup_PWM_Hsync(void){
 	//No prescaler
 	
 	// Set Preload value for timer A h-sync
-	TIMER0_TAILR |= 0;
+	TIMER0_TAILR &= 0;
 	TIMER0_TAILR |= 0x9EE;
 	
 	// Set match value
-	TIMER0_MATCH |= 0;
+	TIMER0_MATCH &= 0;
 	TIMER0_MATCH |= 0x8BD;
 	
 	// Enable timer A DISABLED FOR TIMING
@@ -162,13 +162,21 @@ void setup_PWM_Vsync(void){
 	// Set output state
 	TIMER2_CTL &= ~(1 << 6);
 
-	//No prescaler
+	//8-bit prescaler
+	TIMER2_TAPR &= 0;
+	TIMER2_TAPR |= 0x14;
 	
 	// Set Preload value for timer A h-sync
-	TIMER2_TAILR |= 1334657;
+	TIMER2_TAILR &= 0;
+	TIMER2_TAILR |= 0x5D81;
+	
+	//8bit match prescaler
+	TIMER2_MATCHPR &= 0;
+	TIMER2_MATCHPR |= 0x14;
 	
 	// Set match value
-	TIMER2_MATCH |= 1329573 ;
+	TIMER2_MATCH &= 0;
+	TIMER2_MATCH |= 0x49A5 ;
 	
 	// Enable timer A DISABLE FOR TIMING
 	//TIMER2_CTL &= ~0x1;

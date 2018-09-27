@@ -22,6 +22,8 @@
 #define TIMER2_TAMR			(*((unsigned long *)0x40032004))
 #define TIMER2_MATCH		(*((unsigned long *)0x40032030))
 #define TIMER2_TAILR		(*((unsigned long *)0x40032028))
+#define TIMER2_TAPR			(*((unsigned long *)0x40032038))
+#define TIMER2_MATCHPR	(*((unsigned long *)0x40032040))
 
 
 	
