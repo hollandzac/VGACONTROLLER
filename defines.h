@@ -58,6 +58,14 @@
 #define E 4
 #define F 5
 
+//Bit Band SRAM Base
+#define BITBAND_BASE 			 ((unsigned long) 0x22000000)
+#define BITBAND_ALIAS_BASE ((unsigned long) 0x22000000)
+	
+//defines for NVIC
+#define NVIC_ST_CTRL			(*((unsigned long *)0xE000E010))
+#define NVIC_ST_RELOAD		(*((unsigned long *)0xE000E014))
+#define NVIC_ST_CURRENT		(*((unsigned long *)0xE000E018))
 ;
 
 
