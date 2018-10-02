@@ -29,7 +29,8 @@ PORT A PIN 7   DIGITAL OUT BLUE BIT 1
 /********************* MAIN ****************************/
 
 volatile struct Object ball;
-volatile unsigned long * bitband;
+volatile unsigned long * bitband = (unsigned long*)BITBAND_BASE;
+volatile int count = 0;
 
 
 
@@ -40,36 +41,22 @@ int main(void)
 	//const unsigned long *screen[320][240];
 	
 	unsigned long i;
-	bitband = (unsigned long *)BITBAND_ALIAS_BASE;
+	//disbale interupts
+	__asm("CPSID I");
 	
-
-	
-	//int x,y,j;
-	/*These for loops apply a bit banded alias address to each pixel
-	for (x=0; x<160; x++){
-		for (y=0; y<240; y++){
-			screen[x][y] = (unsigned long *)(BITBAND_ALIAS_BASE + (((x*y)/4)*32) + (((x*y)%4)*4));
-		}
-	}
-	for (x=160; x<320; x++){
-		for (y=0; y<240; y++){
-			screen[x][y] = (unsigned long *)(BITBAND_ALIAS_BASE + ((((x*y)/4)+9600)*32) + (((x*y)%4)*4));
-		}
-	*/
 	
 	//set initial ball position
 	ball.x = 160;
 	ball.y = 120;
 	ball.direction = 4;
-	
-		
+
 	setup_GPIO_clock(A);
 	setup_GPIO_clock(B);
 	
 	
 	setup_GPIO_TIMER_portB(6);
 	setup_GPIO_TIMER_portB(0);
-	setup_GPIO_TIMER_portB(1);
+	setup_GPIO_TIMER_portB(2);
 	
 	for (i=0; i<8; i++){
 		setup_GPIO_RGB_A(i);
@@ -81,14 +68,38 @@ int main(void)
 	
 	setup_PWM_Vsync();
 	
+	//Enable clock for timer 3
+	SYSCTL_RCGTIMER |= (1 << 3);
+	
+	//Wait for clock to stabalize
+	while ((SYSCTL_PRTIMER & (1 << 3)) != (1 << 3)){
+		__asm{ NOP }
+	}
+	
+
+
 	// Enable syncs 
 	TIMER0_CTL |= 0x1;
 	TIMER2_CTL |= 0x1;
 	
+	//ENABLE INTERRUPTS
+	__asm("CPSIE I");
+	
 	// spin 
 	while(1){
-		//poll systick counter for value to enable hsync interupts end of vertical back porch 1.048mms
-		if (NVIC_ST_CURRENT <= 1220240){ TIMER0_TAMR |= (1 << 9);}
+		if ((TIMER3_RIS & 1) == 1){
+			//clear interupt bit 
+			TIMER3_ICR |= 1;
+			//enable h-sync interuppts
+			TIMER0_TAMR |= (1 << 9);
+		}
+		if (count >= 320){
+			count = 0;
+			//disable h-sync interuppts
+			TIMER0_TAMR &= (1 << 9);
+			//reset memory to base
+			bitband = (unsigned long*)BITBAND_BASE;
+		}
 	}
 }
 

@@ -8,4 +8,5 @@ extern void setup_PWM_Hsync(void);
 extern void setup_PWM_Vsync(void);
 extern void objects_ISR(void);
 extern void disable_HSYNC_interupts_ISR(void);
+extern void setup_systick(void);
 

@@ -14,7 +14,7 @@ void setup_GPIO_clock(int port){
 }
 
 // Setup GPIO for PWM on port B
-void setup_GPIO_TIMER_B(int pin){
+void setup_GPIO_TIMER_portB(int pin){
 	
 	GPIO_B_DIR |= (1 << pin);
 	
@@ -130,6 +130,12 @@ void setup_PWM_Hsync(void){
 	
 	//setup interrupt for falling edge triggered
 	TIMER0_CTL |= (1 << 2);
+	TIMER0_TAMR |= (1 << 9);
+	
+	//enable nvic interupt IRQ 19
+	NVIC_ST_EN0 |= (1 << 23);
+	
+	//set priority
 	
 	// Enable timer A DISABLED FOR TIMING
 	//TIMER0_CTL |= 0x1;
@@ -190,6 +196,12 @@ void setup_PWM_Vsync(void){
 	//enable interrupt
 	TIMER2_TAMR |= (1 << 9);
 	
+	//enable nvic interupt IRQ 23
+	NVIC_ST_EN0 |= (1 << 23);
+	
+	//set priority
+	//NVIC_ST_PRI0 |= (1
+	
 	// Enable timer A DISABLE FOR TIMING
 	//TIMER2_CTL &= ~0x1;
 	
@@ -200,23 +212,30 @@ void setup_PWM_Vsync(void){
 	
 	
 void __irq Objects_ISR(void){
-	
-	//setup systick
-	NVIC_ST_CTRL &= ~1;
-	
-	//Set reload value length of active video + vertical back porch 16.301ms 1,304.080 clock cycles
-	NVIC_ST_RELOAD |= 1304080;
-	
-	//Clear counter
-	NVIC_ST_CURRENT |= 1;
-	
-	//Set clock source and enable interupts
-	NVIC_ST_CTRL |= (3 << 1);
-	
-	//enable systick
-	NVIC_ST_CTRL |= 1;
-	
+
 	int x,y,byteoff,bitnum;
+	//Ackowledge interrupt
+	TIMER2_ICR |= (1 << 2);
+	
+	//Setup timer interupt for end of vertical back porch enable h-syncs
+	// Disable timer A
+	TIMER3_CTL &= ~0x1;
+	
+	// Select mode 16 bit
+	TIMER3_CFG &= ~0x7;
+	TIMER3_CFG |= 0x4;
+	
+	// Set oneshot mode
+	TIMER3_TAMR |= 1;
+
+	//No prescaler
+	
+	// Set Preload value end of back porch
+	TIMER3_TAILR &= 0;
+	TIMER3_TAILR |= 83822;
+
+	// Enable timer
+	TIMER3_CTL |= 0x1;
 	
 	//defined for a 2*2 square ball object black all pixels
 	for (x=0; x<2; x++){
@@ -289,16 +308,91 @@ void __irq Objects_ISR(void){
 	}	
 }
 
-void disable_HSYNC_interupts_ISR(void){
-	TIMER0_TAMR &= ~(1 << 9);
-}
 
+//setup systick for interupt at the end of active video
+void setup_systick(void){
+	//setup systick
+	NVIC_ST_CTRL &= ~1;
+	
+	//Set reload value length of screen 16.68322ms 1,334,657 clock cycles
+	NVIC_ST_RELOAD |= 1334657;
+	
+	//Clear counter
+	NVIC_ST_CURRENT |= 1;
+	
+	//Set clock source and enable interupts
+	NVIC_ST_CTRL |= (3 << 1);
+	
+	//enable systick in main
+	//NVIC_ST_CTRL |= 1;
+}
 	
 void pixel_ISR(void){
-	GPIO_A_BASE |= *bitband;
+	//Ackowledge interrupt
+	TIMER0_ICR |= (1 << 2);
+	//Setup timer interupt for end of vertical back porch enable h-syncs
+	// Disable timer A
+	TIMER3_CTL &= ~0x1;
+	
+	// Select mode 16 bit
+	TIMER3_CFG &= ~0x7;
+	TIMER3_CFG |= 0x4;
+	
+	// Set oneshot mode
+	TIMER3_TAMR |= 1;
+
+	//No prescaler
+	
+	// Set Preload value end of horizontal back porch 152 - instruction time
+	TIMER3_TAILR &= 0;
+	TIMER3_TAILR |= 113;
+	
+	// Enable timer
+	TIMER3_CTL |= 0x1;
+	
+	
+	//wait for timer start of video
+	while ((TIMER3_RIS & 1) != 1){ }
+	//clear interupt bit 
+	TIMER3_ICR |= 1;
+	
+	//start draw
+		
+	GPIO_A_DATAMASK_PIN_BOTH = *bitband;
+	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 2);
+	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 4);
+	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 6);
+	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 8);
+	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 10);
+	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 12);
+	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 14);
+	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 16);
+	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 18);
+	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 20);
+	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 22);
+	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 24);
+	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 26);
+	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 28);
+	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 30);
 	bitband++;
-	GPIO_B_BASE |= *bitband;
-	bitband++;
+	GPIO_A_DATAMASK_PIN_BOTH = *bitband;
+	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 2);
+	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 4);
+	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 6);
+	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 8);
+	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 10);
+	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 12);
+	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 14);
+	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 16);
+	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 18);
+	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 20);
+	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 22);
+	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 24);
+	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 26);
+	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 28);
+	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 30);
+	
+	count++;
 }
 
 				

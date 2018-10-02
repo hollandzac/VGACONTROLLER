@@ -97,7 +97,7 @@ __Vectors
         DCD     IntDefaultHandler           ; Debug monitor handler
         DCD     0                           ; Reserved
         DCD     IntDefaultHandler           ; PendSV Handler
-        DCD     disable_HSYNC_interupts_ISR	; SysTick Handler
+        DCD     IntDefaultHandler			; SysTick Handler
         DCD     IntDefaultHandler           ; GPIO Port A
         DCD     IntDefaultHandler           ; GPIO Port B
         DCD     IntDefaultHandler           ; GPIO Port C
@@ -121,7 +121,7 @@ __Vectors
         DCD     IntDefaultHandler           ; Timer 0 subtimer B
         DCD     IntDefaultHandler           ; Timer 1 subtimer A
         DCD     IntDefaultHandler           ; Timer 1 subtimer B
-        DCD     objects_ISR	    			; Timer 2 subtimer A
+        DCD     IntDefaultHandler   			; Timer 2 subtimer A
         DCD     IntDefaultHandler           ; Timer 2 subtimer B
         DCD     IntDefaultHandler           ; Analog Comparator 0
         DCD     IntDefaultHandler           ; Analog Comparator 1
