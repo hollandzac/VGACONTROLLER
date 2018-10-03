@@ -29,8 +29,9 @@ PORT A PIN 7   DIGITAL OUT BLUE BIT 1
 /********************* MAIN ****************************/
 
 volatile struct Object ball;
-volatile unsigned long * bitband = (unsigned long*)BITBAND_BASE;
-volatile int count = 0;
+volatile struct Object paddle;
+volatile unsigned long * bitband = (unsigned long*)PIXEL_BITBAND_BASE;
+volatile unsigned long * count = ((unsigned long*) 0x20000018);
 
 
 
@@ -42,17 +43,29 @@ int main(void)
 	
 	unsigned long i;
 	//disbale interupts
-	__asm("CPSID I");
+	__asm("CPSID i");
 	
+	//set pointer address of objects
+	ball.x = ((unsigned long*) 0x20000000);
+	ball.y = ((unsigned long*) 0x20000004);
+	ball.direction = ((unsigned long*) 0x20000008);
+	paddle.x = ((unsigned long*) 0x2000000C);
+	paddle.y = ((unsigned long*) 0x20000010);
+	paddle.direction = ((unsigned long*) 0x20000014);
 	
-	//set initial ball position
-	ball.x = 160;
-	ball.y = 120;
-	ball.direction = 4;
+	//set initial objectt positions
+	*ball.x = 160;
+	*ball.y = 120;
+	*ball.direction = 4;
+	*paddle.x = 160;
+	*paddle.y = 15;
+	*paddle.direction = 0;
 
 	setup_GPIO_clock(A);
 	setup_GPIO_clock(B);
-	
+	setup_GPIO_clock(F);
+	setup_usrswitch(0);
+	setup_usrswitch(4);
 	
 	setup_GPIO_TIMER_portB(6);
 	setup_GPIO_TIMER_portB(0);
@@ -73,7 +86,7 @@ int main(void)
 	
 	//Wait for clock to stabalize
 	while ((SYSCTL_PRTIMER & (1 << 3)) != (1 << 3)){
-		__asm{ NOP }
+		__asm("NOP");
 	}
 	
 
@@ -83,7 +96,7 @@ int main(void)
 	TIMER2_CTL |= 0x1;
 	
 	//ENABLE INTERRUPTS
-	__asm("CPSIE I");
+	__asm("CPSIE i");
 	
 	// spin 
 	while(1){
@@ -93,12 +106,12 @@ int main(void)
 			//enable h-sync interuppts
 			TIMER0_TAMR |= (1 << 9);
 		}
-		if (count >= 320){
-			count = 0;
+		if (*count >= 320){
+			*count = 0;
 			//disable h-sync interuppts
 			TIMER0_TAMR &= (1 << 9);
 			//reset memory to base
-			bitband = (unsigned long*)BITBAND_BASE;
+			bitband = (unsigned long*)PIXEL_BITBAND_BASE;
 		}
 	}
 }

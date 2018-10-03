@@ -70,6 +70,15 @@
 #define GPIO_B_DEN			(*((unsigned long *)0x4000551C))
 #define GPIO_B_PCTL			(*((unsigned long *)0x4000552C))
 #define GPIO_B_AMSEL		(*((unsigned long *)0x40005528))
+	
+/* Defines for GPIO ports F */
+
+#define GPIO_F_BASE			(*((unsigned long *)0x40025000))
+#define GPIO_F_DIR			(*((unsigned long *)0x40025400))
+#define GPIO_F_AFSEL		(*((unsigned long *)0x40025420))
+#define GPIO_F_DEN			(*((unsigned long *)0x4002551C))
+#define GPIO_F_PCTL			(*((unsigned long *)0x4002552C))
+#define GPIO_F_AMSEL		(*((unsigned long *)0x40025528))
 
 /* Define ports as numbers for ease of use*/
 #define A 0
@@ -79,12 +88,11 @@
 #define E 4
 #define F 5
 
-//Bit Band SRAM Base
-#define BITBAND_BASE 			 ((unsigned long) 0x20000100)
-#define BITBAND_ALIAS_BASE ((unsigned long) 0x22000400)
+//Pixel Bit Band SRAM Base
+#define PIXEL_BITBAND_BASE 			 ((unsigned long) 0x20000100)
+#define PIXEL_BITBAND_ALIAS_BASE ((unsigned long) 0x22000400)
 
 #
-	
 //defines for NVIC
 #define NVIC_ST_CTRL			(*((unsigned long *)0xE000E010))
 #define NVIC_ST_RELOAD		(*((unsigned long *)0xE000E014))

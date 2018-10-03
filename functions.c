@@ -1,5 +1,7 @@
+
 #include "defines.h"
 #include "globals.h"
+
 
 
 
@@ -9,7 +11,7 @@ void setup_GPIO_clock(int port){
 	SYSCTL_RCGCGPIO |= (1 << port);
 	
 	while ((SYSCTL_PRGPIO & (1 << port)) != (1 << port)){
-		__asm{ NOP }
+		__asm("NOP");
 	}
 }
 
@@ -40,6 +42,19 @@ void setup_GPIO_RGB_A(unsigned long pin){
 	
 }
 // Setup the PLL for higher clock speed
+
+void setup_usrswitch (int pin){
+	GPIO_F_DIR &= ~(1 << pin);
+	
+	GPIO_F_AFSEL &= ~(1 << pin);
+	
+	GPIO_F_DEN |= (1 << pin);
+	
+	GPIO_F_PCTL &= ~(0xF << (pin*4));
+	
+	
+}
+
 
 void setup_PLL(void){
 	
@@ -76,7 +91,7 @@ void setup_PLL(void){
 
 	// Wait for PLL to Lock
 	while ((SYSCTL_RIS & (1 << 6)) != (1 << 6)){
-		__asm{ NOP }
+		__asm("NOP");
 	}
 	
 	// Enable PLL
@@ -100,7 +115,7 @@ void setup_PWM_Hsync(void){
 	
 	//Wait for clock to stabalize
 	while ((SYSCTL_PRTIMER & (0x1)) != (0x1)){
-		__asm{ NOP }
+		__asm("NOP");;
 	}
 	
 	// Disable timer A
@@ -156,7 +171,7 @@ void setup_PWM_Vsync(void){
 	
 	//Wait for clock to stabalize
 	while ((SYSCTL_PRTIMER & (1 << 2)) != (1 << 2)){
-		__asm{ NOP }
+		__asm("NOP");
 	}
 	
 	// Disable timer A
@@ -211,9 +226,10 @@ void setup_PWM_Vsync(void){
 	
 	
 	
-void __irq Objects_ISR(void){
+void objects_ISR(void){
 
-	int x,y,byteoff,bitnum;
+	int x,y;
+	unsigned long byteoff,bitnum;
 	//Ackowledge interrupt
 	TIMER2_ICR |= (1 << 2);
 	
@@ -237,73 +253,73 @@ void __irq Objects_ISR(void){
 	// Enable timer
 	TIMER3_CTL |= 0x1;
 	
-	//defined for a 2*2 square ball object black all pixels
+	//defined for a 2*2 square *ball object black all pixels
 	for (x=0; x<2; x++){
 		for (y=0; y<2; y++){
-			byteoff = ((ball.x + x)*(ball.y + y))/4; // this is the byte offset in the bitband address 
-			bitnum = ((ball.x + x)*(ball.y + y))%4; // the bitnumber within the byte
+			byteoff = ((*ball.x + x)*(*ball.y + y))/4; // this is the byte offset in the bitband address 
+			bitnum = ((*ball.x + x)*(*ball.y + y))%4; // the bitnumber within the byte
 			//change green bit
-			(*(unsigned long *)(BITBAND_ALIAS_BASE + (byteoff * 32) + (((ball.x*ball.y)%4)*4))) = 0;
+			(*(unsigned long *)(PIXEL_BITBAND_ALIAS_BASE + (byteoff * 32) + (bitnum*4))) = 0;
 			//change red bit
-			(*(unsigned long *)(BITBAND_ALIAS_BASE + (byteoff*32) + (bitnum*4)+1)) = 0;
+			(*(unsigned long *)(PIXEL_BITBAND_ALIAS_BASE + (byteoff*32) + (bitnum*4)+1)) = 0;
 		}
 	}
 	
 			
-	//Handles if the ball hits a wall
-	if (ball.x == 318) {
-		if (ball.direction == 1) { ball.direction = 7; }
-		else if (ball.direction == 3) { ball.direction = 5; }
+	//Handles if the *ball hits a wall
+	if (*ball.x == 318) {
+		if (*ball.direction == 1) { *ball.direction = 7; }
+		else if (*ball.direction == 3) { *ball.direction = 5; }
 	}
-	if (ball.x == 2) {
-		if (ball.direction == 7) { ball.direction = 1;}
-		else if (ball.direction == 5) { ball.direction = 3;}
+	if (*ball.x == 2) {
+		if (*ball.direction == 7) { *ball.direction = 1;}
+		else if (*ball.direction == 5) { *ball.direction = 3;}
 	}
-	if (ball.y == 238) {
-		if (ball.direction == 0){ 
-			if (ball.x<=160) { ball.direction = 3; }
-			else {ball.direction = 5;}
+	if (*ball.y == 238) {
+		if (*ball.direction == 0){ 
+			if (*ball.x<=160) { *ball.direction = 3; }
+			else {*ball.direction = 5;}
 		}
-		else if (ball.direction == 1){ ball.direction = 3;}
-		else {ball.direction = 5;}
+		else if (*ball.direction == 1){ *ball.direction = 3;}
+		else {*ball.direction = 5;}
 	}
-	if (ball.y == 2) {
-		if (ball.direction == 3){ 
-			if (ball.x<=60 || (ball.x>120 && ball.x<=180) || (ball.x>240 && ball.x<=380)){ ball.direction = 0; }
-			else {ball.direction = 0;}
+	if (*ball.y == 2) {
+		if (*ball.direction == 3){ 
+			if (*ball.x<=60 || (*ball.x>120 && *ball.x<=180) || (*ball.x>240 && *ball.x<=380)){ *ball.direction = 0; }
+			else {*ball.direction = 0;}
 		}
-		else if (ball.direction == 5){
-			if (ball.x<=60 || (ball.x>120 && ball.x<=180) || (ball.x>240 && ball.x<=380)){ ball.direction = 0; }
-			else {ball.direction = 5;}
+		else if (*ball.direction == 5){
+			if (*ball.x<=60 || (*ball.x>120 && *ball.x<=180) || (*ball.x>240 && *ball.x<=380)){ *ball.direction = 0; }
+			else {*ball.direction = 5;}
 		}
 	}
 	
-	//increments balls position in regards to direction
-	switch (ball.direction)
+	//increments *balls position in regards to direction
+	switch (*ball.direction)
 	{
 		case 1:
-			ball.x++;
-			ball.y--;
+			++*ball.x;
+			++*ball.y;
 		case 3:
-			ball.x++;
-			ball.y--;
+			++*ball.x;
+			--*ball.y;
 		case 0:
-			ball.x++;
+			++*ball.y;
 		case 5:
-			ball.x--;
-			ball.y++;
+			--*ball.x;
+			--*ball.y;
 		case 7:
-			ball.x--;
-			ball.y++;
+			--*ball.x;
+			++*ball.y;
 	}
 	
-	//write new ball postition
+	//write new *ball postition
 	for (x=0; x<2; x++){
 		for (y=0; y<2; y++){
-			byteoff = ((ball.x + x)*(ball.y + y))/4; // this is the byte offset in the bitband address 
-			bitnum = ((ball.x + x)*(ball.y + y))%4; // the bitnumber within the byte
+			byteoff = ((*ball.x + x)*(*ball.y + y))/4; // this is the byte offset in the bitband address 
+			bitnum = ((*ball.x + x)*(*ball.y + y))%4; // the bitnumber within the byte
 			//change red bit
-			(*(unsigned long *)(BITBAND_ALIAS_BASE + (byteoff*32) + (bitnum*4)+1)) = 1;
+			(*(unsigned long *)(PIXEL_BITBAND_ALIAS_BASE + (byteoff*32) + (bitnum*4)+1)) = 1;
 		}
 	}	
 }
@@ -328,6 +344,7 @@ void setup_systick(void){
 }
 	
 void pixel_ISR(void){
+	int i;
 	//Ackowledge interrupt
 	TIMER0_ICR |= (1 << 2);
 	//Setup timer interupt for end of vertical back porch enable h-syncs
@@ -357,40 +374,26 @@ void pixel_ISR(void){
 	TIMER3_ICR |= 1;
 	
 	//start draw
-		
-	GPIO_A_DATAMASK_PIN_BOTH = *bitband;
-	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 2);
-	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 4);
-	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 6);
-	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 8);
-	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 10);
-	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 12);
-	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 14);
-	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 16);
-	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 18);
-	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 20);
-	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 22);
-	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 24);
-	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 26);
-	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 28);
-	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 30);
-	bitband++;
-	GPIO_A_DATAMASK_PIN_BOTH = *bitband;
-	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 2);
-	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 4);
-	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 6);
-	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 8);
-	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 10);
-	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 12);
-	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 14);
-	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 16);
-	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 18);
-	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 20);
-	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 22);
-	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 24);
-	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 26);
-	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 28);
-	GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 30);
+	for (i=0; i<20; i++){
+		GPIO_A_DATAMASK_PIN_BOTH = *bitband;
+		GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 2);
+		GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 4);
+		GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 6);
+		GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 8);
+		GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 10);
+		__asm("NOP");
+		GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 12);
+		GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 14);
+		GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 16);
+		GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 18);
+		GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 20);
+		__asm("NOP");
+		GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 22);
+		GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 24);
+		GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 26);
+		GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 28);
+		GPIO_A_DATAMASK_PIN_BOTH = (*bitband >> 30);
+	}
 	
 	count++;
 }

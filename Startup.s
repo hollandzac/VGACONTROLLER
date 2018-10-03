@@ -1,3 +1,4 @@
+
 ; <<< Use Configuration Wizard in Context Menu >>>
 ;******************************************************************************
 ;
@@ -22,7 +23,7 @@
 ; This is part of revision 7860 of the Stellaris Peripheral Driver Library.
 ;
 ;******************************************************************************
-
+extern objects_ISR
 ;******************************************************************************
 ;
 ; <o> Stack Size (in Bytes) <0x0-0xFFFFFFFF:8>
@@ -117,11 +118,11 @@ __Vectors
         DCD     IntDefaultHandler           ; ADC Sequence 2
         DCD     IntDefaultHandler           ; ADC Sequence 3
         DCD     IntDefaultHandler           ; Watchdog timer
-        DCD     IntDefaultHandler           ; Timer 0 subtimer A
+        DCD 	        					; Timer 0 subtimer A
         DCD     IntDefaultHandler           ; Timer 0 subtimer B
         DCD     IntDefaultHandler           ; Timer 1 subtimer A
         DCD     IntDefaultHandler           ; Timer 1 subtimer B
-        DCD     IntDefaultHandler   			; Timer 2 subtimer A
+        DCD     objects_ISR   				; Timer 2 subtimer A
         DCD     IntDefaultHandler           ; Timer 2 subtimer B
         DCD     IntDefaultHandler           ; Analog Comparator 0
         DCD     IntDefaultHandler           ; Analog Comparator 1

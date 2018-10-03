@@ -1,11 +1,11 @@
 struct Object {
-	int x;
-	int y;
-	int direction;
+	unsigned long *x;
+	unsigned long *y;
+	unsigned long *direction;
 };
 
 extern volatile struct Object ball;
 extern volatile struct Object paddle;
 extern volatile unsigned long * bitband;
-extern volatile int count;
+extern volatile unsigned long * count;
 
